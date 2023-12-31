@@ -536,7 +536,12 @@ pub const Node = extern struct {
 
     /// Remember to check with isNull
     pub fn getChildByFieldId(node: Node, field_id: FieldId) Node {
-        return externs.ts_node_child_by_field_name(node, field_id);
+        return externs.ts_node_child_by_field_id(node, field_id);
+    }
+
+    /// Remember to check with isNull
+    pub fn getDescendentForPointRange(node: Node, start: Point, end: Point) Node {
+        return externs.ts_node_descendant_for_point_range(node, start, end);
     }
 
     // TODO: Sibling iterators
