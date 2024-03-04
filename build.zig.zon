@@ -14,4 +14,10 @@
     .paths = .{
         "",
     },
+
+    .paths = .{
+        "build.zig.zon",
+        "build.zig",
+        "treez.zig",
+    },
 }
