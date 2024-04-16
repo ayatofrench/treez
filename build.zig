@@ -4,19 +4,31 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    _ = b.addModule("treez", .{
-        .source_file = .{ .path = "treez.zig" },
-        .dependencies = &.{.{
-            .name = "regex",
-            .module = b.dependency(
-                "regex",
-                .{
-                    .target = target,
-                    .optimize = optimize,
-                },
-            ).module("regex"),
-        }},
+    const lib = b.addModule("treez", .{
+        .root_source_file = .{ .path = "treez.zig" },
     });
+
+    lib.addImport("oniguruma", b.dependency(
+        "oniguruma",
+        .{
+            .target = target,
+            .optimize = optimize,
+        },
+    ).module("oniguruma"));
+
+    // _ = b.addModule("treez", .{
+    //     .source_file = .{ .path = "treez.zig" },
+    //     .dependencies = &.{.{
+    //         .name = "regex",
+    //         .module = b.dependency(
+    //             "regex",
+    //             .{
+    //                 .target = target,
+    //                 .optimize = optimize,
+    //             },
+    //         ).module("regex"),
+    //     }},
+    // });
 
     b.installArtifact(b.dependency("tree-sitter", .{
         .target = target,
