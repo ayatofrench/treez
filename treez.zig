@@ -1,5 +1,6 @@
 const std = @import("std");
 const Regex = @import("regex").Regex;
+const oni = @import("oniguruma");
 
 // TREE_SITTER_LANGUAGE_VERSION 14
 // TREE_SITTER_MIN_COMPATIBLE_LANGUAGE_VERSION 13
@@ -856,7 +857,7 @@ pub const CursorWithValidation = struct {
 
     pub const MatchPredicate = struct {
         a: []const u8,
-        regex: *Regex,
+        regex: *oni.Regex,
     };
 
     pub const TextPredicate = union(enum) {
@@ -923,8 +924,15 @@ pub const CursorWithValidation = struct {
                     },
                     .@"match?" => {
                         const regex_string = query.getStringValueForId(@as(u32, @intCast(preds[index + 2].value_id)));
-                        const re = try allocator.create(Regex);
-                        re.* = Regex.compile(allocator, regex_string) catch @panic("");
+                        // const re = try allocator.create(Regex);
+                        const re = try oni.Regex.init(
+                            regex_string,
+                            .{},
+                            oni.Encoding.utf8,
+                            oni.Syntax.default,
+                            null,
+                        ) catch @panic("failed to init regex");
+                        // re.* = Regex.compile(allocator, regex_string) catch @panic("");
 
                         try predicates.append(allocator, TextPredicate{
                             .match_predicate = .{
@@ -1004,9 +1012,10 @@ pub const CursorWithValidation = struct {
                             if (cap.id == a) a_value = source[cap.node.getStartByte()..cap.node.getEndByte()];
                         }
 
-                        const res = val.regex.match(a_value.?) catch return false;
+                        const res = val.regex.search(a_value.?);
+                        defer val.regex.deinit();
 
-                        if (!res) return false;
+                        if (res == oni.Error.Mismatch) return false;
                     },
                 }
             }
